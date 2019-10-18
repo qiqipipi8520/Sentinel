@@ -44,7 +44,7 @@ public class OccupiableBucketLeapArray extends LeapArray<MetricBucket> {
     @Override
     public MetricBucket newEmptyBucket(long time) {
         MetricBucket newBucket = new MetricBucket();
-        // time是否在当前桶中，是则放回，否则null
+        // time是否在当前桶中，是则返回，否则null
         MetricBucket borrowBucket = borrowArray.getWindowValue(time);
         // 处于当前桶中，新桶继承当前桶的统计数据
         if (borrowBucket != null) {

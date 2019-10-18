@@ -304,7 +304,7 @@ public abstract class LeapArray<T> {
         int idx = calculateTimeIdx(timeMillis);
 
         WindowWrap<T> bucket = array.get(idx);
-        //检查给定的时间戳记是否在当前存储桶中。
+        //检查给定的时间戳是否在当前存储桶中。
         if (bucket == null || !bucket.isTimeInWindow(timeMillis)) {
             return null;
         }
