@@ -38,7 +38,7 @@ public class CommandCenterInitFunc implements InitFunc {
         }
         // 通过spi获取commandHandle实例集合，放入commandCenter的map中
         commandCenter.beforeStart();
-        //创建socket通道进行数据传输
+        // 创建socket通道进行数据传输
         commandCenter.start();
         RecordLog.info("[CommandCenterInit] Starting command center: "
                 + commandCenter.getClass().getCanonicalName());

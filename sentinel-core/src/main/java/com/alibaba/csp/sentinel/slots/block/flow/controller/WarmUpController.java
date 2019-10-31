@@ -64,9 +64,13 @@ import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
 public class WarmUpController implements TrafficShapingController {
 
     protected double count;
+    //默认为3
     private int coldFactor;
+    //转折点的令牌数
     protected int warningToken = 0;
+    //最大的令牌数
     private int maxToken;
+    //斜线斜率
     protected double slope;
 
     protected AtomicLong storedTokens = new AtomicLong(0);

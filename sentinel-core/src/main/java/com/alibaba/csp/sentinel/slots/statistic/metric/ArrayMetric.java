@@ -163,23 +163,32 @@ public class ArrayMetric implements Metric {
     public List<MetricNode> details() {
         List<MetricNode> details = new ArrayList<MetricNode>();
         data.currentWindow();
+        //列出统计结果
         List<WindowWrap<MetricBucket>> list = data.list();
         for (WindowWrap<MetricBucket> window : list) {
             if (window == null) {
                 continue;
             }
+            // 对统计结果进行封装
             MetricNode node = new MetricNode();
+            // 一秒内被流量控制的请求数量
             node.setBlockQps(window.value().block());
+            // 一秒内业务本身异常的总和
             node.setExceptionQps(window.value().exception());
+            // 一秒内通过的请求
             node.setPassQps(window.value().pass());
+            // 一秒内完成请求
             long successQps = window.value().success();
             node.setSuccessQps(successQps);
+            // 一秒内该资源的平均响应时间
             if (successQps != 0) {
                 node.setRt(window.value().rt() / successQps);
             } else {
                 node.setRt(window.value().rt());
             }
+            // 设置统计窗口的开始时间
             node.setTimestamp(window.windowStart());
+            // 提前占用的通过请求数
             node.setOccupiedPassQps(window.value().occupiedPass());
 
             details.add(node);

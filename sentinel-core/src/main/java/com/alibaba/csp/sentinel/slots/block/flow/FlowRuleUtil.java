@@ -65,6 +65,7 @@ public final class FlowRuleUtil {
 
     /**
      * Build the flow rule map from raw list of flow rules, grouping by resource name.
+     * 从流规则的原始列表构建流规则图，并按资源名称分组。
      *
      * @param list          raw list of flow rules
      * @param filter        rule filter
@@ -78,6 +79,7 @@ public final class FlowRuleUtil {
 
     /**
      * Build the flow rule map from raw list of flow rules, grouping by provided group function.
+     * 从流规则的原始列表构建流规则图，并按提供的组功能分组。
      *
      * @param list          raw list of flow rules
      * @param groupFunction grouping function of the map (by key)
@@ -95,6 +97,7 @@ public final class FlowRuleUtil {
         Map<K, Set<FlowRule>> tmpMap = new ConcurrentHashMap<>();
 
         for (FlowRule rule : list) {
+            //校验必要字段：资源名，限流阈值， 限流阈值类型，调用关系限流策略，流量控制效果等
             if (!isValidRule(rule)) {
                 RecordLog.warn("[FlowRuleManager] Ignoring invalid flow rule when loading new flow rules: " + rule);
                 continue;
@@ -102,17 +105,20 @@ public final class FlowRuleUtil {
             if (filter != null && !filter.test(rule)) {
                 continue;
             }
+            //应用名，如果没有则会使用default
             if (StringUtil.isBlank(rule.getLimitApp())) {
                 rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
             }
-
+            //设置拒绝策略：直接拒绝、Warm Up、匀速排队，默认是DefaultController
             TrafficShapingController rater = generateRater(rule);
             rule.setRater(rater);
 
+            //获取Resource名字
             K key = groupFunction.apply(rule);
             if (key == null) {
                 continue;
             }
+            //根据Resource进行分组
             Set<FlowRule> flowRules = tmpMap.get(key);
 
             if (flowRules == null) {
@@ -123,6 +129,7 @@ public final class FlowRuleUtil {
 
             flowRules.add(rule);
         }
+        //根据ClusterMode LimitApp排序
         Comparator<FlowRule> comparator = new FlowRuleComparator();
         for (Entry<K, Set<FlowRule>> entries : tmpMap.entrySet()) {
             List<FlowRule> rules = new ArrayList<>(entries.getValue());

@@ -138,18 +138,24 @@ public class StatisticNode implements Node {
     @Override
     public Map<Long, MetricNode> metrics() {
         // The fetch operation is thread-safe under a single-thread scheduler pool.
+        // 在单线程调度程序池下，提取操作是线程安全的。
         long currentTime = TimeUtil.currentTimeMillis();
+        // 获取当前时间的滑动窗口的开始时间，这里取1000是因为rollingCounterInMinute一个窗口长度是1000ms
         currentTime = currentTime - currentTime % 1000;
         Map<Long, MetricNode> metrics = new ConcurrentHashMap<>();
+        // 获取滑动窗口里的统计数据
         List<MetricNode> nodesOfEverySecond = rollingCounterInMinute.details();
         long newLastFetchTime = lastFetchTime;
         // Iterate metrics of all resources, filter valid metrics (not-empty and up-to-date).
         for (MetricNode node : nodesOfEverySecond) {
+            //筛选符合的滑动窗口的节点
             if (isNodeInTime(node, currentTime) && isValidMetricNode(node)) {
                 metrics.put(node.getTimestamp(), node);
+                //选出符合节点里最大的时间戳数据赋值
                 newLastFetchTime = Math.max(newLastFetchTime, node.getTimestamp());
             }
         }
+        //设置成滑动窗口里统计的最大时间
         lastFetchTime = newLastFetchTime;
 
         return metrics;
@@ -303,13 +309,17 @@ public class StatisticNode implements Node {
 
     @Override
     public long tryOccupyNext(long currentTime, int acquireCount, double threshold) {
+        // 最大qps
         double maxCount = threshold * IntervalProperty.INTERVAL / 1000;
+        // 获取当前还有多少个请求在等待
         long currentBorrow = rollingCounterInSecond.waiting();
+        // 如果等待请求数大于最大qps,返回可以占用的最大时间长度
         if (currentBorrow >= maxCount) {
             return OccupyTimeoutProperty.getOccupyTimeout();
         }
-
+        // 窗口长度
         int windowLength = IntervalProperty.INTERVAL / SampleCountProperty.SAMPLE_COUNT;
+        // 最早时间
         long earliestTime = currentTime - currentTime % windowLength + windowLength - IntervalProperty.INTERVAL;
 
         int idx = 0;
@@ -317,6 +327,8 @@ public class StatisticNode implements Node {
          * Note: here {@code currentPass} may be less than it really is NOW, because time difference
          * since call rollingCounterInSecond.pass(). So in high concurrency, the following code may
          * lead more tokens be borrowed.
+         * 注意：这里的{@code currentPass}可能比现在还小，因为时间差自调用rollingCounterInSecond.pass（）
+         * 以来。因此，在高并发性中，以下代码可能导致更多的令牌被借用。
          */
         long currentPass = rollingCounterInSecond.pass();
         while (earliestTime < currentTime) {

@@ -43,6 +43,7 @@ public class GatewayFlowRule {
     /**
      * For parameter flow control. If not set, the gateway rule will be
      * converted to normal flow rule.
+     * 用于参数流控制。如果未设置，则网关规则将转换为普通流规则。
      */
     private GatewayParamFlowItem paramItem;
 

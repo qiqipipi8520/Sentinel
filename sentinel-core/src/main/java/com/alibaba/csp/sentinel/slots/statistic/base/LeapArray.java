@@ -113,7 +113,6 @@ public abstract class LeapArray<T> {
 
     /**
      * Reset given bucket to provided start time and reset the value.
-     * 将给定存储桶重置为提供的开始时间，然后重置该值。
      *
      * @param startTime  the start time of the bucket in milliseconds
      * @param windowWrap current bucket
@@ -121,8 +120,19 @@ public abstract class LeapArray<T> {
      */
     protected abstract WindowWrap<T> resetWindowTo(WindowWrap<T> windowWrap, long startTime);
 
+    /**
+     * calculateTimeIdx方法用当前的时间戳除以每个窗口的大小，
+     * 再和array数组大小取模。array数据是一个容量为60的数组，代表被统计的60秒分割的60个小窗口。
+     * 举例：
+     *   例如当前timeMillis = 1567175708975
+     *   timeId = 1567175708975/1000 = 1567175708
+     *   timeId % array.length() = 1567175708%60 = 8
+     *   也就是说当前的时间窗口是第八个。
+     * @param timeMillis
+     * @return
+     */
     private int calculateTimeIdx(/*@Valid*/ long timeMillis) {
-        // 获取当前毫秒对应到window length的一个id
+        // 获取当前毫秒对应到window length的一个id,time每增加一个windowLength的长度，timeId就会增加1，时间窗口就会往前滑动一个
         long timeId = timeMillis / windowLengthInMs;
         // Calculate current index so we can map the timestamp to the leap array.
         // 获取这个id对应到滚动数组中的具体index

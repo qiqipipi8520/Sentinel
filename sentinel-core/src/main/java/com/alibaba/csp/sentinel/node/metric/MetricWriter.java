@@ -102,8 +102,11 @@ public class MetricWriter {
         }
 
         long time = System.currentTimeMillis();
+        //转换成秒
         this.lastSecond = time / 1000;
+        //singleFileSize = 1024 * 1024 * 50
         this.singleFileSize = singleFileSize;
+        //totalFileCount = 6
         this.totalFileCount = totalFileCount;
         try {
             this.timeSecondBase = df.parse("1970-01-01 00:00:00").getTime() / 1000;

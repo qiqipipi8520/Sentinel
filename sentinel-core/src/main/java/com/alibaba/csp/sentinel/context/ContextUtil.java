@@ -52,6 +52,7 @@ public class ContextUtil {
 
     /**
      * Holds all {@link EntranceNode}. Each {@link EntranceNode} is associated with a distinct context name.
+     * 容纳所有{@link EntranceNode}。每个{@link EntranceNode}都与一个不同的上下文名称相关联。
      */
     private static volatile Map<String, DefaultNode> contextNameNodeMap = new HashMap<>();
 

@@ -17,7 +17,7 @@ public class MetricCallbackInit implements InitFunc {
         //添加回调函数
         //key是com.alibaba.csp.sentinel.metric.extension.callback.MetricEntryCallback
         StatisticSlotCallbackRegistry.addEntryCallback(MetricEntryCallback.class.getCanonicalName(),
-            new MetricEntryCallback());
+                new MetricEntryCallback());
         //key是com.alibaba.csp.sentinel.metric.extension.callback.MetricExitCallback
         StatisticSlotCallbackRegistry.addExitCallback(MetricExitCallback.class.getCanonicalName(),
             new MetricExitCallback());

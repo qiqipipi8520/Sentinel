@@ -41,6 +41,8 @@ import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
  * One resource has only one cluster node, while one resource can have multiple
  * default nodes.
  * </p>
+ *一、为每个资源创建一个clusterNode，然后把clusterNode塞到DefaultNode中去
+ * 二、将clusterNode保持到全局的map中去，用资源作为map的key
  *
  * @author jialiang.linjl
  */
@@ -63,6 +65,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
      * become. so we don't concurrent map but a lock. as this lock only happens
      * at the very beginning while concurrent map will hold the lock all the time.
      * </p>
+     *
      */
     private static volatile Map<ResourceWrapper, ClusterNode> clusterNodeMap = new HashMap<>();
 
@@ -88,6 +91,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
                 }
             }
         }
+        // 将clusterNode塞到DefaultNode中去
         node.setClusterNode(clusterNode);
 
         /*

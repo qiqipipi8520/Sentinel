@@ -35,9 +35,10 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 /**
  * <p>
  * One resources can have multiple rules. And these rules take effects in the following order:
+ * 一种资源可以有多个规则。这些规则按以下顺序生效：
  * <ol>
- * <li>requests from specified caller</li>
- * <li>no specified caller</li>
+ * <li>requests from specified caller来自指定呼叫者的请求</li>
+ * <li>no specified caller没有指定的呼叫者</li>
  * </ol>
  * </p>
  *
@@ -45,24 +46,37 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  * @author Eric Zhao
  */
 public class FlowRuleManager {
-
+    /**
+     * 规则集合
+     */
     private static final Map<String, List<FlowRule>> flowRules = new ConcurrentHashMap<String, List<FlowRule>>();
-
+    /**
+     * 监听器
+     */
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
+    /**
+     * 用来监听配置是否发生变化
+     */
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
+    /**
+     * 创建一个延迟的线程池
+     */
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("sentinel-metrics-record-task", true));
 
     static {
+        // 设置监听
         currentProperty.addListener(LISTENER);
+        // 每一秒种调用一次MetricTimerListener的run方法
         SCHEDULER.scheduleAtFixedRate(new MetricTimerListener(), 0, 1, TimeUnit.SECONDS);
     }
 
     /**
      * Listen to the {@link SentinelProperty} for {@link FlowRule}s. The property is the source of {@link FlowRule}s.
      * Flow rules can also be set by {@link #loadRules(List)} directly.
+     * 收听{@link SentinelProperty}中的{@link FlowRule}。该属性是{@link FlowRule}的来源。 流规则也可以直接由{@link #loadRules（List）}设置。
      *
      * @param property the property to listen.
      */
@@ -91,6 +105,7 @@ public class FlowRuleManager {
 
     /**
      * Load {@link FlowRule}s, former rules will be replaced.
+     * 加载{@link FlowRule}，以前的规则将被替换。
      *
      * @param rules new rules to load.
      */

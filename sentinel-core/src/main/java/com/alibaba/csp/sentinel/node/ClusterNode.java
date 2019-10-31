@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * <p>
  * This class stores summary runtime statistics of the resource, including rt, thread count, qps
  * and so on. Same resource shares the same {@link ClusterNode} globally, no matter in which
+ * 此类存储资源的摘要运行时统计信息，包括rt，线程数，qps等。相同资源在全局内共享相同的{@link ClusterNode}
  * {@link com.alibaba.csp.sentinel.context.Context}.
  * </p>
  * <p>
@@ -35,6 +36,10 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * of different origin. Use {@link #getOrCreateOriginNode(String)} to get {@link Node} of the specific
  * origin.<br/>
  * Note that 'origin' usually is Service Consumer's app name.
+ * 为了区别来自不同来源的调用（在 {@link ContextUtil＃enter（String name，String origin）}中声明），
+ * 一个{@link ClusterNode}持有一个{@link #originCountMap}，此映射持有{@link StatisticNode} *不同来源的。
+ * 使用{@link #getOrCreateOriginNode（String）}获取特定来源的{@link Node}。
+ * 请注意，“ origin”通常是Service Consumer的应用名称。
  * </p>
  *
  * @author qinan.qn

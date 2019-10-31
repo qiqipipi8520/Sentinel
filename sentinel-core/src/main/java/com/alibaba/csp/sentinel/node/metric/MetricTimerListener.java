@@ -38,17 +38,21 @@ public class MetricTimerListener implements Runnable {
 
     @Override
     public void run() {
+        //这个run方法里面主要是做定时的数据采集，然后写到log文件里去
         Map<Long, List<MetricNode>> maps = new TreeMap<Long, List<MetricNode>>();
+        //遍历集群节点
         for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
             String name = e.getKey().getName();
             ClusterNode node = e.getValue();
             Map<Long, MetricNode> metrics = node.metrics();
             aggregate(maps, metrics, name);
         }
+        //汇总统计的数据
         aggregate(maps, Constants.ENTRY_NODE.metrics(), Constants.TOTAL_IN_RESOURCE_NAME);
         if (!maps.isEmpty()) {
             for (Entry<Long, List<MetricNode>> entry : maps.entrySet()) {
                 try {
+                    //写入日志中
                     metricWriter.write(entry.getKey(), entry.getValue());
                 } catch (Exception e) {
                     RecordLog.warn("[MetricTimerListener] Write metric error", e);

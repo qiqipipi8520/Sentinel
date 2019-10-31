@@ -36,6 +36,7 @@ import com.alibaba.csp.sentinel.util.function.Function;
 
 /**
  * Rule checker for flow control rules.
+ * 流控制规则的规则检查器。
  *
  * @author Eric Zhao
  */
@@ -46,10 +47,13 @@ public class FlowRuleChecker {
         if (ruleProvider == null || resource == null) {
             return;
         }
+        // 获取调用的resource对应的所有限流规则
         Collection<FlowRule> rules = ruleProvider.apply(resource.getName());
         if (rules != null) {
             for (FlowRule rule : rules) {
+                // 逐个规则判断是否触发限流操作
                 if (!canPassCheck(rule, context, node, count, prioritized)) {
+                    // 如果canPassCheck失败，说明触发限流，直接抛出FlowException
                     throw new FlowException(rule.getLimitApp(), rule);
                 }
             }
@@ -63,11 +67,12 @@ public class FlowRuleChecker {
 
     public boolean canPassCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node, int acquireCount,
                                                     boolean prioritized) {
+        //是否有调用方需要被限流，默认情况下limitApp为'default'
         String limitApp = rule.getLimitApp();
         if (limitApp == null) {
             return true;
         }
-
+        //是否有集群节点需要被限流
         if (rule.isClusterMode()) {
             return passClusterCheck(rule, context, node, acquireCount, prioritized);
         }
@@ -77,7 +82,9 @@ public class FlowRuleChecker {
 
     private static boolean passLocalCheck(FlowRule rule, Context context, DefaultNode node, int acquireCount,
                                           boolean prioritized) {
+        //按请求者和策略选择节点
         Node selectedNode = selectNodeByRequesterAndStrategy(rule, context, node);
+        //如果没有合乎规则的Node，则直接返回true，表示通过
         if (selectedNode == null) {
             return true;
         }
@@ -112,32 +119,45 @@ public class FlowRuleChecker {
         return !RuleConstant.LIMIT_APP_DEFAULT.equals(origin) && !RuleConstant.LIMIT_APP_OTHER.equals(origin);
     }
 
+    /**
+     * 这个方法主要是用来根据控制根据不同的规则，获取不同的node进行数据的统计。
+     * 在标记1中表示，如果流控规则配置了来源应用且不是"default"或者"other"这种特殊值，那么这种时候该规则就只对配置的来源应用生效。
+     * 在标记2中表示，limitApp是"default"，代表针对所有应用进行统计。
+     * 标记7中，这个是"other"值的处理，假设当前请求来源不在当前规则的limitApp中，则进行下面的处理。
+     *
+     * @param rule
+     * @param context
+     * @param node
+     * @return
+     */
     static Node selectNodeByRequesterAndStrategy(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node) {
         // The limit app should not be empty.
         String limitApp = rule.getLimitApp();
+        //关系限流策略
         int strategy = rule.getStrategy();
         String origin = context.getOrigin();
-
+        //origin不为`default` or `other`，并且limitApp和origin相等
         if (limitApp.equals(origin) && filterOrigin(origin)) {
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 // Matches limit origin, return origin statistic node.
                 return context.getOriginNode();
             }
-
+            //关系限流策略为关联或者链路的处理
             return selectReferenceNode(rule, context, node);
         } else if (RuleConstant.LIMIT_APP_DEFAULT.equals(limitApp)) {
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
+                //这里返回ClusterNode，表示所有应用对该资源的所有请求情况
                 // Return the cluster node.
                 return node.getClusterNode();
             }
-
+            //关系限流策略为关联或者链路的处理
             return selectReferenceNode(rule, context, node);
         } else if (RuleConstant.LIMIT_APP_OTHER.equals(limitApp)
             && FlowRuleManager.isOtherOrigin(origin, rule.getResource())) {
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 return context.getOriginNode();
             }
-
+            //关系限流策略为关联或者链路的处理
             return selectReferenceNode(rule, context, node);
         }
 

@@ -41,7 +41,7 @@ public final class SlotChainProvider {
         if (slotChainBuilder != null) {
             return slotChainBuilder.build();
         }
-
+        // 是否有自定义的SlotChainBuilder
         resolveSlotChainBuilder();
 
         if (slotChainBuilder == null) {

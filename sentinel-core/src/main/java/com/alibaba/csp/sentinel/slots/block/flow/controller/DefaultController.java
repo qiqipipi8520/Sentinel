@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
  * Default throttling controller (immediately reject strategy).
+ * 默认节流控制器（立即拒绝策略）。
  *
  * @author jialiang.linjl
  * @author Eric Zhao
@@ -47,8 +48,14 @@ public class DefaultController implements TrafficShapingController {
 
     @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+        // 获取已经使用过的令牌数
+        // 判断是限流还是限制并发数量，然后获取流量或并发数量
         int curCount = avgUsedTokens(node);
+        // 如果使用过的令牌数目加上这次的超过了限流的数目
+        // 则返回false，表示不能通过
         if (curCount + acquireCount > count) {
+            // 1.5.0添加了“占用”机制，允许在当前 QPS 已经达到限流阈值时，同个资源高优先级的请求提前占用未来时间窗口的配额数，
+            // 等待到对应时间窗口到达时直接通过，从而可以实现“最终通过”的效果而不是被立即拒绝；
             if (prioritized && grade == RuleConstant.FLOW_GRADE_QPS) {
                 long currentTime;
                 long waitInMs;
@@ -72,6 +79,7 @@ public class DefaultController implements TrafficShapingController {
         if (node == null) {
             return DEFAULT_AVG_USED_TOKENS;
         }
+        // 限流阈值类型是否为并发线程数，是返回当前线程数，返回passQps
         return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int)(node.passQps());
     }
 
